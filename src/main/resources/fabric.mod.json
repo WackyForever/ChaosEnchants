@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "chaosenchants",
+  "version": "${version}",
+  "name": "Minecraft But Enchants Multiply",
+  "description": "Every advancement multiplies your enchantment power!",
+  "authors": ["You"],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/chaosenchants/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.example.chaos.ChaosMod"
+    ],
+    "client": [
+      "com.example.chaos.client.MultiplierHudOverlay"
+    ]
+  },
+  "mixins": [
+    "chaos.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.15.11",
+    "minecraft": "~1.21",
+    "java": ">=21"
+  }
+}

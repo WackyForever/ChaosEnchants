@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "com.example.chaos.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "InfiniteEnchantmentMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

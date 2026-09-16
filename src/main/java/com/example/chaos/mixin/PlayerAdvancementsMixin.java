@@ -14,7 +14,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(PlayerAdvancements.class)
 public class PlayerAdvancementsMixin {
 
-```
 @Shadow
 private ServerPlayer player;
 
@@ -41,6 +40,5 @@ private void chaosEnchants$afterAward(
 
     AdvancementChaosHandler.onPlayerEarnAdvancement(player);
 }
-```
 
 }

@@ -11,11 +11,23 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Mixin(PlayerAdvancements.class)
 public class PlayerAdvancementsMixin {
 
     @Shadow
     private ServerPlayer player;
+
+    /*
+     * Advancements that we have already processed for this player.
+     *
+     * This prevents the same completed advancement from increasing
+     * the multiplier multiple times.
+     */
+    private final Set<AdvancementHolder> chaosEnchants$processed =
+            new HashSet<>();
 
     @Inject(
             method = "award",
@@ -26,7 +38,7 @@ public class PlayerAdvancementsMixin {
             String criterionKey,
             CallbackInfoReturnable<Boolean> cir
     ) {
-        // The criterion was not newly awarded.
+        // The criterion wasn't newly awarded.
         if (!cir.getReturnValue()) {
             return;
         }
@@ -35,8 +47,16 @@ public class PlayerAdvancementsMixin {
                 ((PlayerAdvancements) (Object) this)
                         .getOrStartProgress(advancement);
 
-        // The advancement is not actually complete yet.
+        // The advancement isn't complete yet.
         if (!progress.isDone()) {
+            return;
+        }
+
+        /*
+         * If this advancement was already processed, don't trigger
+         * the multiplier again.
+         */
+        if (!chaosEnchants$processed.add(advancement)) {
             return;
         }
 

@@ -4,54 +4,65 @@ import com.example.chaos.state.GlobalMultiplierState;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
+
 import java.util.Optional;
 
 public class AdvancementChaosHandler {
+
     public static void onPlayerEarnAdvancement(ServerPlayer player) {
-        long currentMultiplier = GlobalMultiplierState.getMultiplier(player);
+
+        long currentMultiplier =
+                GlobalMultiplierState.getMultiplier(player);
+
         long nextMultiplier = currentMultiplier * 2;
-        GlobalMultiplierState.setMultiplier(player, nextMultiplier);
-        GlobalMultiplierState.syncToClient(player, nextMultiplier);
+
+        GlobalMultiplierState.setMultiplier(
+                player,
+                nextMultiplier
+        );
+
+        GlobalMultiplierState.syncToClient(
+                player,
+                nextMultiplier
+        );
 
         Registry<Enchantment> registry =
-                player.registryAccess().registryOrThrow(Registries.ENCHANTMENT);
+                player.registryAccess()
+                        .registryOrThrow(Registries.ENCHANTMENT);
 
-        for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
-            ItemStack itemStack = player.getInventory().getItem(i);
-            if (itemStack.isEmpty()) continue;
+        for (int i = 0;
+             i < player.getInventory().getContainerSize();
+             i++) {
 
-            var enchantmentMap =
-                    EnchantmentHelper.getEnchantmentsForCrafting(itemStack);
+            ItemStack itemStack =
+                    player.getInventory().getItem(i);
 
-            if (enchantmentMap.isEmpty()) {
-                Optional<Holder.Reference<Enchantment>> randomEnchant =
-                        registry.getRandom(player.getRandom());
+            if (itemStack.isEmpty()) {
+                continue;
+            }
 
-                if (randomEnchant.isPresent()) {
-                    itemStack.enchant(randomEnchant.get(), (int) nextMultiplier);
-                }
-            } else {
-                EnchantmentHelper.updateEnchantments(itemStack, mutableComponents -> {
-                    for (var entry : enchantmentMap.entrySet()) {
-                        long scaledLevel = (long) entry.getValue() * 2;
+            Optional<Holder.Reference<Enchantment>> randomEnchant =
+                    registry.getRandom(player.getRandom());
 
-                        mutableComponents.set(
-                                entry.getKey(),
-                                (int) Math.min(scaledLevel, Integer.MAX_VALUE)
-                        );
-                    }
-                });
+            if (randomEnchant.isPresent()) {
+
+                itemStack.enchant(
+                        randomEnchant.get(),
+                        (int) Math.min(
+                                nextMultiplier,
+                                Integer.MAX_VALUE
+                        )
+                );
             }
         }
 
         player.sendSystemMessage(
                 Component.literal(
-                        "§6§lMULTIPLIER UP! §eAll enchants multiplied to §b"
+                        "§6§lMULTIPLIER UP! §eAll items received random enchants at §b"
                                 + nextMultiplier + "x!"
                 )
         );

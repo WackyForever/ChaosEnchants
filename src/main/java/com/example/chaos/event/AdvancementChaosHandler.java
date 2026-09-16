@@ -14,20 +14,24 @@ import java.util.Optional;
 public class AdvancementChaosHandler {
     public static void onPlayerEarnAdvancement(ServerPlayer player) {
         long currentMultiplier = GlobalMultiplierState.getMultiplier(player);
-        long nextMultiplier = currentMultiplier * 2; // Strict exponential double
+        long nextMultiplier = currentMultiplier * 2;
         GlobalMultiplierState.setMultiplier(player, nextMultiplier);
         GlobalMultiplierState.syncToClient(player, nextMultiplier);
 
-        Registry<Enchantment> registry = player.registryAccess().registryOrThrow(Registries.registries().get(Registries.ENCHANTMENT).key());
-        
+        Registry<Enchantment> registry =
+                player.registryAccess().registryOrThrow(Registries.ENCHANTMENT);
+
         for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
             ItemStack itemStack = player.getInventory().getItem(i);
             if (itemStack.isEmpty()) continue;
 
-            var enchantmentMap = EnchantmentHelper.getEnchantmentsForCrafting(itemStack);
+            var enchantmentMap =
+                    EnchantmentHelper.getEnchantmentsForCrafting(itemStack);
 
             if (enchantmentMap.isEmpty()) {
-                Optional<Holder.Reference<Enchantment>> randomEnchant = registry.getRandom(player.getRandom());
+                Optional<Holder.Reference<Enchantment>> randomEnchant =
+                        registry.getRandom(player.getRandom());
+
                 if (randomEnchant.isPresent()) {
                     itemStack.enchant(randomEnchant.get(), (int) nextMultiplier);
                 }
@@ -35,11 +39,21 @@ public class AdvancementChaosHandler {
                 EnchantmentHelper.updateEnchantments(itemStack, mutableComponents -> {
                     for (var entry : enchantmentMap.entrySet()) {
                         long scaledLevel = (long) entry.getValue() * 2;
-                        mutableComponents.set(entry.getKey(), (int) Math.min(scaledLevel, Integer.MAX_VALUE));
+
+                        mutableComponents.set(
+                                entry.getKey(),
+                                (int) Math.min(scaledLevel, Integer.MAX_VALUE)
+                        );
                     }
                 });
             }
         }
-        player.sendSystemMessage(Component.literal("§6§lMULTIPLIER UP! §eAll enchants multiplied to §b" + nextMultiplier + "x!"));
+
+        player.sendSystemMessage(
+                Component.literal(
+                        "§6§lMULTIPLIER UP! §eAll enchants multiplied to §b"
+                                + nextMultiplier + "x!"
+                )
+        );
     }
 }

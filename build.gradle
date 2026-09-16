@@ -39,10 +39,10 @@ repositories {
 
 dependencies {
     minecraft "com.mojang:minecraft:1.21"
-    mappings "net.fabricmc:yarn:1.21+build.9:v2"
+    mappings loom.officialMojangMappings()
 
     modImplementation "net.fabricmc:fabric-loader:0.15.11"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:0.100.8+1.21"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:0.100.0+1.21"
 }
 
 processResources {

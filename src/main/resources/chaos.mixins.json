@@ -4,8 +4,9 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "UncapEnchantmentLevelsMixin",
+    "UncapEnchantmentMutableMixin",
     "PlayerAdvancementsMixin"
-  ],
+],
   "injectors": {
     "defaultRequire": 1
   }

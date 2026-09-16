@@ -3,11 +3,11 @@ buildscript {
         mavenCentral()
         maven {
             name = "Fabric"
-            url = "https://fabricmc.net"
+            url = "https://maven.fabricmc.net/"
         }
     }
     dependencies {
-        classpath "net.fabricmc:fabric-loom:1.7-SNAPSHOT"
+        classpath "net.fabricmc:fabric-loom:1.7.4"
     }
 }
 
@@ -26,7 +26,7 @@ java {
 repositories {
     mavenCentral()
     maven { url = "https://terraformersmc.com" }
-    maven { url = "https://fabricmc.net" }
+    maven { url = "https://maven.fabricmc.net/" }
 }
 
 dependencies {

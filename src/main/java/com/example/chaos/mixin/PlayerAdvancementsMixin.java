@@ -48,8 +48,6 @@ public class PlayerAdvancementsMixin {
 
     /*
      * Minecraft loads the player's saved advancement progress here.
-     *
-     * We completely disable our award handler while loading.
      */
     @Inject(
             method = "load",
@@ -65,9 +63,6 @@ public class PlayerAdvancementsMixin {
     /*
      * Once loading is finished, remember every advancement that is
      * already complete.
-     *
-     * These were earned previously, so they must NOT increase the
-     * multiplier just because the player joined the world.
      */
     @Inject(
             method = "load",
@@ -120,15 +115,36 @@ public class PlayerAdvancementsMixin {
             return;
         }
 
+        String advancementPath = advancement.id().getPath();
+
         /*
          * Recipe advancements are used for recipe unlocking.
          *
-         * They are explicitly NOT supposed to increase the multiplier.
-         *
-         * This works for vanilla and modded recipe advancements because
-         * we check the path rather than just the "minecraft" namespace.
+         * They are NOT supposed to increase the multiplier.
          */
-        if (advancement.id().getPath().startsWith("recipes/")) {
+        if (advancementPath.startsWith("recipes/")) {
+            return;
+        }
+
+        /*
+         * Root advancements are the advancements that open the
+         * different advancement tabs.
+         *
+         * Examples:
+         *
+         * minecraft:story/root
+         * minecraft:adventure/root
+         * minecraft:nether/root
+         * minecraft:end/root
+         * minecraft:husbandry/root
+         *
+         * These are NOT supposed to increase the multiplier.
+         *
+         * This also works for modded advancement tabs whose root
+         * advancement uses the normal "/root" path.
+         */
+        if (advancementPath.equals("root")
+                || advancementPath.endsWith("/root")) {
             return;
         }
 

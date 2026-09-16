@@ -9,16 +9,24 @@ import org.spongepowered.asm.mixin.injection.ModifyConstant;
 public class UncapEnchantmentLevelsMixin {
 
     /**
-     * Minecraft 1.21 normally uses 255 as the maximum
-     * enchantment level when validating ItemEnchantments.
-     *
-     * Replace that limit with Integer.MAX_VALUE.
+     * Remove the vanilla 255 level limit from ItemEnchantments.
      */
     @ModifyConstant(
             method = "<init>",
             constant = @Constant(intValue = 255)
     )
     private int chaosenchants$uncapConstructorLevel(int value) {
+        return Integer.MAX_VALUE;
+    }
+
+    /**
+     * Remove the 255 limit from the ItemEnchantments codec.
+     */
+    @ModifyConstant(
+            method = "<clinit>",
+            constant = @Constant(intValue = 255)
+    )
+    private static int chaosenchants$uncapCodecLevel(int value) {
         return Integer.MAX_VALUE;
     }
 }

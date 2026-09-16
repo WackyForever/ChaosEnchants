@@ -29,4 +29,26 @@ public class UncapEnchantmentLevelsMixin {
     private static int chaosenchants$uncapCodecLevel(int value) {
         return Integer.MAX_VALUE;
     }
+
+    /**
+     * Remove the 255 limit when an enchantment level is set.
+     */
+    @ModifyConstant(
+            method = "set",
+            constant = @Constant(intValue = 255)
+    )
+    private int chaosenchants$uncapSetLevel(int value) {
+        return Integer.MAX_VALUE;
+    }
+
+    /**
+     * Remove the 255 limit when an enchantment level is upgraded.
+     */
+    @ModifyConstant(
+            method = "upgrade",
+            constant = @Constant(intValue = 255)
+    )
+    private int chaosenchants$uncapUpgradeLevel(int value) {
+        return Integer.MAX_VALUE;
+    }
 }

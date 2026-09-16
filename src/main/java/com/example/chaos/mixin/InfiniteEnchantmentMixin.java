@@ -9,9 +9,41 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Enchantment.class)
 public class InfiniteEnchantmentMixin {
-    // Overrides vanilla rules so ANY item or block accepts ANY enchantment
-    @Inject(method = "canEnchant", at = @At("HEAD"), cancellable = true)
-    private void allowAnything(ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
+
+    /**
+     * Allows ANY enchantment to be applied to ANY item.
+     * This includes dirt, blocks, food, sticks, etc.
+     */
+    @Inject(
+            method = "canEnchant",
+            at = @At("HEAD"),
+            cancellable = true
+    )
+    private void allowAnything(
+            ItemStack stack,
+            CallbackInfoReturnable<Boolean> cir
+    ) {
+        cir.setReturnValue(true);
+    }
+
+    /**
+     * Allows ANY enchantment to coexist with ANY other enchantment.
+     * This removes vanilla incompatibility restrictions such as:
+     * Sharpness + Smite
+     * Fortune + Silk Touch
+     * Protection + Fire Protection
+     * Infinity + Mending
+     * etc.
+     */
+    @Inject(
+            method = "canCombine",
+            at = @At("HEAD"),
+            cancellable = true
+    )
+    private void allowAllEnchantments(
+            Enchantment other,
+            CallbackInfoReturnable<Boolean> cir
+    ) {
         cir.setReturnValue(true);
     }
 }

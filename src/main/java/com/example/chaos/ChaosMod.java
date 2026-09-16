@@ -1,44 +1,72 @@
 package com.example.chaos;
 
 import com.example.chaos.event.AdvancementChaosHandler;
+import com.example.chaos.state.GlobalMultiplierState;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.codec.PacketCodecs;
+import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.util.Identifier;
 
 public class ChaosMod implements ModInitializer {
+
     public static final String MOD_ID = "chaosenchants";
 
-    // Define Network Packet payload for syncing the client HUD screen seamlessly
-    public record MultiplierSyncPayload(long multiplier) implements CustomPacketPayload {
-        public static final Id<MultiplierSyncPayload> ID = new Id<>(ResourceLocation.fromNamespaceAndPath(MOD_ID, "sync"));
-        public static final PacketCodec<RegistryByteBuf, MultiplierSyncPayload> CODEC = CustomPacketPayload.codec(
-                (payload, buf) -> buf.writeLong(payload.multiplier()),
-                buf -> new MultiplierSyncPayload(buf.readLong())
-        );
-        @Override public Id<? extends CustomPacketPayload> type() { return ID; }
+    /**
+     * Network payload used to synchronize the multiplier with the client HUD.
+     */
+    public record MultiplierSyncPayload(long multiplier) implements CustomPayload {
+
+        public static final CustomPayload.Id<MultiplierSyncPayload> ID =
+                new CustomPayload.Id<>(
+                        Identifier.of(MOD_ID, "sync")
+                );
+
+        public static final PacketCodec<RegistryByteBuf, MultiplierSyncPayload> CODEC =
+                PacketCodec.tuple(
+                        PacketCodecs.LONG,
+                        MultiplierSyncPayload::multiplier,
+                        MultiplierSyncPayload::new
+                );
+
+        @Override
+        public Id<? extends CustomPayload> getId() {
+            return ID;
+        }
     }
 
     @Override
     public void onInitialize() {
-        // Register the networking packet channel
-        PayloadTypeRegistry.playS2C().register(MultiplierSyncPayload.ID, MultiplierSyncPayload.CODEC);
 
-        // Hook into when advancements complete
-        ServerPlayerEvents.AFTER_ADVANCEMENT_EARNED.register((player, advancement) -> {
-            AdvancementChaosHandler.onPlayerEarnAdvancement(player);
-        });
+        // Register the S2C payload.
+        PayloadTypeRegistry.playS2C().register(
+                MultiplierSyncPayload.ID,
+                MultiplierSyncPayload.CODEC
+        );
 
-        // Make sure returning or connecting players sync their saved multiplier values instantly
-        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
-            long current = com.example.chaos.state.GlobalMultiplierState.getMultiplier(handler.getPlayer());
-            ServerPlayNetworking.send(handler.getPlayer(), new MultiplierSyncPayload(current));
-        });
+        // Handle completed advancements.
+        ServerPlayerEvents.AFTER_ADVANCEMENT_EARNED.register(
+                (player, advancement) -> {
+                    AdvancementChaosHandler.onPlayerEarnAdvancement(player);
+                }
+        );
+
+        // Synchronize the saved multiplier whenever a player joins.
+        ServerPlayConnectionEvents.JOIN.register(
+                (handler, sender, server) -> {
+                    long current =
+                            GlobalMultiplierState.getMultiplier(handler.player);
+
+                    ServerPlayNetworking.send(
+                            handler.player,
+                            new MultiplierSyncPayload(current)
+                    );
+                }
+        );
     }
 }

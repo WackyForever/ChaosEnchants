@@ -1,7 +1,16 @@
-plugins {
-    id 'fabric-loom' version '1.7.4'
-    id 'maven-publish'
+buildscript {
+    repositories {
+        maven { url = "https://fabricmc.net" }
+        mavenCentral()
+    }
+    dependencies {
+        classpath "net.fabricmc:fabric-loom:1.7.4"
+    }
 }
+
+// Apply the core plugins using the fallback method
+apply plugin: "net.fabricmc.loom"
+apply plugin: "maven-publish"
 
 version = '1.0.0'
 group = 'com.example.chaos'

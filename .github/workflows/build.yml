@@ -15,15 +15,13 @@ jobs:
           java-version: '21'
 
       - name: Make Gradle Executable
-        working-directory: ChaosEnchants
         run: chmod +x gradlew
 
       - name: Build Mod File
-        working-directory: ChaosEnchants
         run: ./gradlew build
 
       - name: Upload Completed Mod Artifact
         uses: actions/upload-artifact@v4
         with:
           name: ChaosEnchants-Mod
-          path: ChaosEnchants/build/libs/*.jar
+          path: "**/build/libs/*.jar"

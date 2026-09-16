@@ -1,6 +1,5 @@
 package com.example.chaos;
 
-import com.example.chaos.event.AdvancementChaosHandler;
 import com.example.chaos.state.GlobalMultiplierState;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;

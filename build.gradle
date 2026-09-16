@@ -1,22 +1,7 @@
-buildscript {
-    repositories {
-        mavenCentral()
-        maven {
-            name = "Fabric"
-            url = "https://fabricmc.net"
-        }
-    }
-    dependencies {
-        classpath "net.fabricmc:fabric-loom:1.7.4"
-    }
-}
-
 plugins {
+    id 'fabric-loom' version '1.7.4'
     id 'maven-publish'
 }
-
-// Modern, bulletproof method for Gradle 9.5+ to activate the loaded plugin
-plugins.apply("net.fabricmc.loom")
 
 version = '1.0.0'
 group = 'com.example.chaos'
@@ -30,7 +15,7 @@ java {
 repositories {
     mavenCentral()
     maven { url = "https://terraformersmc.com" }
-    maven { url = "https://fabricmc.net" }
+    maven { url = "https://maven.fabricmc.net/" }
 }
 
 dependencies {

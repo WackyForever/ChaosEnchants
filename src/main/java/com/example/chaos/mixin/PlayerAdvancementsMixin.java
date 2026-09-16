@@ -16,15 +16,8 @@ public class PlayerAdvancementsMixin {
     @Shadow
     private ServerPlayer player;
 
-    /*
-     * This method is called by Minecraft when an advancement
-     * has actually been completed.
-     *
-     * This is much better than injecting into award(), because
-     * award() is called for individual criteria.
-     */
     @Inject(
-            method = "endTrackingCompleted",
+            method = "endTrackingCompleted(Lnet/minecraft/advancements/AdvancementHolder;)V",
             at = @At("HEAD")
     )
     private void onAdvancementCompleted(

@@ -1,2 +1,12 @@
-rootProject.name = 'chaosenchants'
+pluginManagement {
+    repositories {
+        maven {
+            name = 'Fabric'
+            url = 'https://fabricmc.net'
+        }
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
 
+rootProject.name = 'chaosenchants'

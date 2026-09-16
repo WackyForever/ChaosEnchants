@@ -3,7 +3,7 @@ buildscript {
         mavenCentral()
         maven {
             name = "Fabric"
-            url = "https://maven.fabricmc.net/"
+            url = "https://fabricmc.net"
         }
     }
     dependencies {
@@ -15,8 +15,8 @@ plugins {
     id 'maven-publish'
 }
 
-// Manually apply the Loom plugin since it is handled by the buildscript block above
-apply plugin: 'net.fabricmc.loom'
+// Modern, bulletproof method for Gradle 9.5+ to activate the loaded plugin
+plugins.apply("net.fabricmc.loom")
 
 version = '1.0.0'
 group = 'com.example.chaos'
@@ -30,7 +30,7 @@ java {
 repositories {
     mavenCentral()
     maven { url = "https://terraformersmc.com" }
-    maven { url = "https://maven.fabricmc.net/" }
+    maven { url = "https://fabricmc.net" }
 }
 
 dependencies {

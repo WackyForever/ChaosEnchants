@@ -3,7 +3,8 @@
   "package": "com.example.chaos.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "InfiniteEnchantmentMixin"
+    "InfiniteEnchantmentMixin",
+    "PlayerAdvancementsMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -46,26 +46,34 @@ public class PlayerAdvancementsMixin {
             String criterionKey,
             CallbackInfoReturnable<Boolean> cir
     ) {
-        boolean wasComplete =
-                PlayerAdvancementState.wasComplete(advancement);
-
         AdvancementProgress progress =
                 ((PlayerAdvancements) (Object) this)
                         .getOrStartProgress(advancement);
 
-        // Remove our temporary state immediately.
+        boolean wasComplete =
+                PlayerAdvancementState.wasComplete(advancement);
+
         PlayerAdvancementState.remove(advancement);
 
-        // award() must have actually awarded a criterion.
+        /*
+         * award() returns true when the criterion was actually awarded.
+         *
+         * We also require the advancement to have changed from
+         * incomplete -> complete.
+         */
         if (!cir.getReturnValue()) {
             return;
         }
 
-        // Only trigger ChaosEnchants when this call
-        // actually completed the advancement.
-        if (!wasComplete && progress.isDone()) {
-            AdvancementChaosHandler.onPlayerEarnAdvancement(player);
+        if (wasComplete) {
+            return;
         }
+
+        if (!progress.isDone()) {
+            return;
+        }
+
+        AdvancementChaosHandler.onPlayerEarnAdvancement(player);
     }
 }
 ```

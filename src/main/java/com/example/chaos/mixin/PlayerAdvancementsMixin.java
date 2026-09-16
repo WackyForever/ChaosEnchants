@@ -25,7 +25,16 @@ public class PlayerAdvancementsMixin {
             String criterionKey,
             CallbackInfoReturnable<Boolean> cir
     ) {
-        if (cir.getReturnValue()) {
+        // Only continue if a new criterion was actually awarded.
+        if (!cir.getReturnValue()) {
+            return;
+        }
+
+        // Check whether the entire advancement is now completed.
+        if (player.getAdvancements()
+                .getOrStartProgress(advancement)
+                .isDone()) {
+
             AdvancementChaosHandler.onPlayerEarnAdvancement(player);
         }
     }

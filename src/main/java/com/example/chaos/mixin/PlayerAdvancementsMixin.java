@@ -18,10 +18,30 @@ public class PlayerAdvancementsMixin {
     private ServerPlayer player;
 
     @Inject(
-            method = "award(Lnet/minecraft/advancements/AdvancementHolder;Ljava/lang/String;)Z",
+            method = "award",
+            at = @At("HEAD")
+    )
+    private void chaosEnchants$beforeAward(
+            AdvancementHolder advancement,
+            String criterionKey,
+            CallbackInfoReturnable<Boolean> cir
+    ) {
+        AdvancementProgress progress =
+                ((PlayerAdvancements) (Object) this)
+                        .getOrStartProgress(advancement);
+
+        // Store whether this advancement was already complete.
+        PlayerAdvancementState.setWasComplete(
+                advancement,
+                progress.isDone()
+        );
+    }
+
+    @Inject(
+            method = "award",
             at = @At("RETURN")
     )
-    private void onAdvancementCriterionAwarded(
+    private void chaosEnchants$afterAward(
             AdvancementHolder advancement,
             String criterionKey,
             CallbackInfoReturnable<Boolean> cir
@@ -31,17 +51,19 @@ public class PlayerAdvancementsMixin {
             return;
         }
 
-        // Check the progress of the entire advancement.
         AdvancementProgress progress =
                 ((PlayerAdvancements) (Object) this)
                         .getOrStartProgress(advancement);
 
-        // Only trigger ChaosEnchants when the COMPLETE
-        // advancement has been finished.
-        if (!progress.isDone()) {
-            return;
+        boolean wasComplete =
+                PlayerAdvancementState.wasComplete(advancement);
+
+        // Only fire when the advancement changed from
+        // incomplete -> complete.
+        if (!wasComplete && progress.isDone()) {
+            AdvancementChaosHandler.onPlayerEarnAdvancement(player);
         }
 
-        AdvancementChaosHandler.onPlayerEarnAdvancement(player);
+        PlayerAdvancementState.remove(advancement);
     }
 }

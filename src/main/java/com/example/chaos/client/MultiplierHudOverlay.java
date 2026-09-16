@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.DeltaTracker;
 
 public class MultiplierHudOverlay implements ClientModInitializer, HudRenderCallback {
     private static long clientMultiplier = 1;
@@ -22,7 +23,7 @@ public class MultiplierHudOverlay implements ClientModInitializer, HudRenderCall
     }
 
     @Override
-    public void onHudRender(GuiGraphics drawContext, float tickDelta) {
+    public void onHudRender(GuiGraphics drawContext, DeltaTracker tickCounter) {
         Minecraft client = Minecraft.getInstance();
         if (client.player == null || client.options.hideGui) return;
 

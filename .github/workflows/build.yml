@@ -14,11 +14,20 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
+      - name: Force Compatible Gradle Wrapper Version
+        run: |
+          mkdir -p gradle/wrapper
+          echo "distributionBase=GRADLE_USER_HOME" > gradle/wrapper/gradle-wrapper.properties
+          echo "distributionPath=wrapper/dists" >> gradle/wrapper/gradle-wrapper.properties
+          echo "distributionUrl=https\://services.gradle.org/distributions/gradle-8.9-bin.zip" >> gradle/wrapper/gradle-wrapper.properties
+          echo "zipStoreBase=GRADLE_USER_HOME" >> gradle/wrapper/gradle-wrapper.properties
+          echo "zipStorePath=wrapper/dists" >> gradle/wrapper/gradle-wrapper.properties
+
       - name: Make Gradle Executable
         run: chmod +x gradlew
 
       - name: Build Mod File
-        run: ./gradlew build
+        run: ./gradlew build --no-daemon
 
       - name: Upload Completed Mod Artifact
         uses: actions/upload-artifact@v4

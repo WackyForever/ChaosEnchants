@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(PlayerAdvancements.class)
 public class PlayerAdvancementsMixin {
@@ -16,26 +16,21 @@ public class PlayerAdvancementsMixin {
     @Shadow
     private ServerPlayer player;
 
+    /*
+     * This method is called by Minecraft when an advancement
+     * has actually been completed.
+     *
+     * This is much better than injecting into award(), because
+     * award() is called for individual criteria.
+     */
     @Inject(
-            method = "award",
-            at = @At("RETURN")
+            method = "endTrackingCompleted",
+            at = @At("HEAD")
     )
-    private void onAdvancementAwarded(
+    private void onAdvancementCompleted(
             AdvancementHolder advancement,
-            String criterionKey,
-            CallbackInfoReturnable<Boolean> cir
+            CallbackInfo ci
     ) {
-        // Only continue if a new criterion was actually awarded.
-        if (!cir.getReturnValue()) {
-            return;
-        }
-
-        // Check whether the entire advancement is now completed.
-        if (player.getAdvancements()
-                .getOrStartProgress(advancement)
-                .isDone()) {
-
-            AdvancementChaosHandler.onPlayerEarnAdvancement(player);
-        }
+        AdvancementChaosHandler.onPlayerEarnAdvancement(player);
     }
 }

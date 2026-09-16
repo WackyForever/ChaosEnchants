@@ -7,35 +7,33 @@ import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 
 public class ChaosMod implements ModInitializer {
 
     public static final String MOD_ID = "chaosenchants";
 
-    /**
-     * Network payload used to synchronize the multiplier with the client HUD.
-     */
-    public record MultiplierSyncPayload(long multiplier) implements CustomPayload {
+    public record MultiplierSyncPayload(long multiplier)
+            implements CustomPacketPayload {
 
-        public static final CustomPayload.Id<MultiplierSyncPayload> ID =
-                new CustomPayload.Id<>(
-                        Identifier.of(MOD_ID, "sync")
+        public static final CustomPacketPayload.Type<MultiplierSyncPayload> ID =
+                new CustomPacketPayload.Type<>(
+                        ResourceLocation.fromNamespaceAndPath(MOD_ID, "sync")
                 );
 
-        public static final PacketCodec<RegistryByteBuf, MultiplierSyncPayload> CODEC =
-                PacketCodec.tuple(
-                        PacketCodecs.LONG,
+        public static final StreamCodec<RegistryFriendlyByteBuf, MultiplierSyncPayload> CODEC =
+                StreamCodec.composite(
+                        ByteBufCodecs.VAR_LONG,
                         MultiplierSyncPayload::multiplier,
                         MultiplierSyncPayload::new
                 );
 
         @Override
-        public Id<? extends CustomPayload> getId() {
+        public CustomPacketPayload.Type<? extends CustomPacketPayload> type() {
             return ID;
         }
     }
@@ -43,27 +41,23 @@ public class ChaosMod implements ModInitializer {
     @Override
     public void onInitialize() {
 
-        // Register the S2C payload.
         PayloadTypeRegistry.playS2C().register(
                 MultiplierSyncPayload.ID,
                 MultiplierSyncPayload.CODEC
         );
 
-        // Handle completed advancements.
         ServerPlayerEvents.AFTER_ADVANCEMENT_EARNED.register(
-                (player, advancement) -> {
-                    AdvancementChaosHandler.onPlayerEarnAdvancement(player);
-                }
+                (player, advancement) ->
+                        AdvancementChaosHandler.onPlayerEarnAdvancement(player)
         );
 
-        // Synchronize the saved multiplier whenever a player joins.
         ServerPlayConnectionEvents.JOIN.register(
                 (handler, sender, server) -> {
                     long current =
-                            GlobalMultiplierState.getMultiplier(handler.player);
+                            GlobalMultiplierState.getMultiplier(handler.getPlayer());
 
                     ServerPlayNetworking.send(
-                            handler.player,
+                            handler.getPlayer(),
                             new MultiplierSyncPayload(current)
                     );
                 }

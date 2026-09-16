@@ -3,9 +3,10 @@ buildscript {
         mavenCentral()
         maven {
             name = "Fabric"
-            url = "https://fabricmc.net"
+            url = "https://maven.fabricmc.net/"
         }
     }
+
     dependencies {
         classpath "net.fabricmc:fabric-loom:1.7.4"
     }
@@ -25,9 +26,15 @@ java {
 
 repositories {
     mavenCentral()
-    // FINALLY CORRECT: Added the maven. prefix and the /releases/ tag to this line
-    maven { url = "https://maven.terraformersmc.com/" }
-    maven { url = "https://fabricmc.net" }
+
+    maven {
+        url = "https://maven.terraformersmc.com/"
+    }
+
+    maven {
+        name = "Fabric"
+        url = "https://maven.fabricmc.net/"
+    }
 }
 
 dependencies {

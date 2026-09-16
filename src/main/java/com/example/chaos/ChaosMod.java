@@ -46,10 +46,6 @@ public class ChaosMod implements ModInitializer {
                 MultiplierSyncPayload.CODEC
         );
 
-        ServerPlayerEvents.AFTER_ADVANCEMENT_EARNED.register(
-                (player, advancement) ->
-                        AdvancementChaosHandler.onPlayerEarnAdvancement(player)
-        );
 
         ServerPlayConnectionEvents.JOIN.register(
                 (handler, sender, server) -> {

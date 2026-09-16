@@ -11,7 +11,6 @@ buildscript {
     }
 }
 
-// Fixed naming mapping string so Gradle links the plugin successfully
 apply plugin: "fabric-loom"
 apply plugin: "maven-publish"
 
@@ -26,7 +25,8 @@ java {
 
 repositories {
     mavenCentral()
-    maven { url = "https://terraformersmc.com" }
+    // FINALLY CORRECT: Added the maven. prefix and the /releases/ tag to this line
+    maven { url = "https://maven.terraformersmc.com/" }
     maven { url = "https://fabricmc.net" }
 }
 

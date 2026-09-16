@@ -3,7 +3,7 @@ buildscript {
         mavenCentral()
         maven {
             name = "Fabric"
-            url = "https://maven.fabricmc.net/"
+            url = "https://fabricmc.net"
         }
     }
     dependencies {
@@ -11,7 +11,8 @@ buildscript {
     }
 }
 
-apply plugin: "net.fabricmc.loom"
+// Fixed naming mapping string so Gradle links the plugin successfully
+apply plugin: "fabric-loom"
 apply plugin: "maven-publish"
 
 version = '1.0.0'
@@ -26,7 +27,7 @@ java {
 repositories {
     mavenCentral()
     maven { url = "https://terraformersmc.com" }
-    maven { url = "https://maven.fabricmc.net/" }
+    maven { url = "https://fabricmc.net" }
 }
 
 dependencies {

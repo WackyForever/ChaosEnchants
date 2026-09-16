@@ -27,14 +27,13 @@ public class PlayerAdvancementsMixin {
             String criterionKey,
             CallbackInfoReturnable<Boolean> cir
     ) {
-        AdvancementProgress progress =
-                ((PlayerAdvancements) (Object) this)
-                        .getOrStartProgress(advancement);
-
-        PlayerAdvancementState.setWasComplete(
-                advancement,
-                progress.isDone()
-        );
+        /*
+         * Nothing is done here.
+         *
+         * We intentionally do not store advancement state.
+         * PlayerAdvancements.award() can be called while Minecraft
+         * is loading/restoring advancement information.
+         */
     }
 
     @Inject(
@@ -46,33 +45,39 @@ public class PlayerAdvancementsMixin {
             String criterionKey,
             CallbackInfoReturnable<Boolean> cir
     ) {
-        AdvancementProgress progress =
-                ((PlayerAdvancements) (Object) this)
-                        .getOrStartProgress(advancement);
-
-        boolean wasComplete =
-                PlayerAdvancementState.wasComplete(advancement);
-
-        PlayerAdvancementState.remove(advancement);
-
         /*
-         * award() returns true when the criterion was actually awarded.
-         *
-         * We also require the advancement to have changed from
-         * incomplete -> complete.
+         * If award() returned false, this criterion was not newly awarded.
          */
         if (!cir.getReturnValue()) {
             return;
         }
 
-        if (wasComplete) {
-            return;
-        }
+        /*
+         * Get the advancement's current progress AFTER the criterion
+         * was awarded.
+         */
+        AdvancementProgress progress =
+                ((PlayerAdvancements) (Object) this)
+                        .getOrStartProgress(advancement);
 
+        /*
+         * Only react when the ENTIRE advancement is now complete.
+         *
+         * This prevents individual criteria from increasing the
+         * multiplier before the advancement itself is finished.
+         */
         if (!progress.isDone()) {
             return;
         }
 
+        /*
+         * At this point:
+         *
+         * 1. A criterion was actually awarded.
+         * 2. The advancement is completely finished.
+         *
+         * Trigger ChaosEnchants exactly once for this completion.
+         */
         AdvancementChaosHandler.onPlayerEarnAdvancement(player);
     }
 }

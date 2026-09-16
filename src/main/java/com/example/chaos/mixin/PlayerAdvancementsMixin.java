@@ -1,6 +1,7 @@
 package com.example.chaos.mixin;
 
 import com.example.chaos.event.AdvancementChaosHandler;
+import net.minecraft.advancements.AdvancementCriterion;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.server.PlayerAdvancements;
 import net.minecraft.server.level.ServerPlayer;
@@ -17,11 +18,13 @@ public class PlayerAdvancementsMixin {
     private ServerPlayer player;
 
     @Inject(
-            method = "endTrackingCompleted",
+            method = "endTrackingCompleted(Lnet/minecraft/advancements/AdvancementHolder;Ljava/lang/String;Lnet/minecraft/advancements/AdvancementCriterion;)V",
             at = @At("HEAD")
     )
     private void chaosEnchants$onAdvancementCompleted(
             AdvancementHolder advancement,
+            String criterionKey,
+            AdvancementCriterion<?> criterion,
             CallbackInfo ci
     ) {
         AdvancementChaosHandler.onPlayerEarnAdvancement(player);

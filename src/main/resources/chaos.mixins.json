@@ -6,7 +6,7 @@
     "UncapEnchantmentLevelsMixin",
     "UncapEnchantmentMutableMixin",
     "PlayerAdvancementsMixin",
-    "UncapEnchantmentEffectsMixin"
+    "UncapEfficiencyMixin"
   ],
   "injectors": {
     "defaultRequire": 1

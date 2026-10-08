@@ -15,16 +15,16 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class AdvancementChaosHandler {
 
     public static void onPlayerEarnAdvancement(ServerPlayer player) {
 
-        // Get and double the current multiplier.
+        // Get the player's current multiplier.
         long currentMultiplier =
                 GlobalMultiplierState.getMultiplier(player);
 
+        // Double the multiplier.
         long nextMultiplier = currentMultiplier * 2L;
 
         // Prevent overflow.
@@ -36,14 +36,16 @@ public class AdvancementChaosHandler {
         GlobalMultiplierState.setMultiplier(player, nextMultiplier);
         GlobalMultiplierState.syncToClient(player, nextMultiplier);
 
+        // Get Minecraft's enchantment registry.
         Registry<Enchantment> registry =
                 player.registryAccess()
                         .registryOrThrow(Registries.ENCHANTMENT);
 
+        // Convert the multiplier to an enchantment level.
         int enchantmentLevel =
                 (int) Math.min(nextMultiplier, Integer.MAX_VALUE);
 
-        // Read the compatibility toggle.
+        // Read the compatibility setting.
         boolean allowIncompatible =
                 EnchantmentCompatibilityState
                         .get(player.getServer())
@@ -57,45 +59,39 @@ public class AdvancementChaosHandler {
             ItemStack itemStack =
                     player.getInventory().getItem(i);
 
+            // Ignore empty slots.
             if (itemStack.isEmpty()) {
                 continue;
             }
 
-            /*
-             * ON:
-             * Any enchantment can be selected, as before.
-             *
-             * OFF:
-             * Normally enchantable items only receive enchantments
-             * compatible with their item type and existing enchants.
-             *
-             * Normally non-enchantable items, such as dirt, retain
-             * the original unrestricted random-enchantment behavior.
-             */
-
+            // Determine whether this item can normally store enchantments.
             boolean normallyEnchantable =
                     EnchantmentHelper.canStoreEnchantments(itemStack);
 
             List<Holder.Reference<Enchantment>> candidates =
                     new ArrayList<>();
 
+            // Find eligible enchantments.
             for (Holder.Reference<Enchantment> candidate :
                     registry.holders().toList()) {
 
+                /*
+                 * If compatibility is ON, allow any enchantment.
+                 *
+                 * If the item is normally non-enchantable (such as dirt),
+                 * preserve the original unrestricted behavior in either mode.
+                 */
                 if (allowIncompatible || !normallyEnchantable) {
                     candidates.add(candidate);
                     continue;
                 }
 
-                // Check whether this enchantment supports the item.
-                boolean supportsItem =
-                        candidate.value().canEnchant(itemStack);
-
-                if (!supportsItem) {
+                // When OFF, check whether the enchantment supports this item.
+                if (!candidate.value().canEnchant(itemStack)) {
                     continue;
                 }
 
-                // Reject conflicts with existing enchantments.
+                // Check for conflicts with existing enchantments.
                 boolean conflicts = false;
 
                 for (Holder<Enchantment> existing :
@@ -103,9 +99,9 @@ public class AdvancementChaosHandler {
                                 .keySet()) {
 
                     if (!existing.equals(candidate)
-                            && Enchantment.areIncompatible(
-                                    candidate,
-                                    existing)) {
+                            && !Enchantment.areCompatible(
+                                    existing,
+                                    candidate)) {
                         conflicts = true;
                         break;
                     }
@@ -116,11 +112,12 @@ public class AdvancementChaosHandler {
                 }
             }
 
+            // No compatible enchantments available.
             if (candidates.isEmpty()) {
                 continue;
             }
 
-            // Choose a random eligible enchantment.
+            // Select a random eligible enchantment.
             Holder<Enchantment> enchantment =
                     candidates.get(
                             player.getRandom().nextInt(candidates.size())
@@ -138,6 +135,7 @@ public class AdvancementChaosHandler {
             );
         }
 
+        // Notify the player.
         player.sendSystemMessage(
                 Component.literal(
                         "§6§lMULTIPLIER UP! §eAll eligible items received a random enchantment at §b"

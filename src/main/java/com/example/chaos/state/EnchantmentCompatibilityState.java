@@ -3,7 +3,7 @@ package com.example.chaos.state;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.world.level.DataFixTypes;
+import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.saveddata.SavedData;
 
 public class EnchantmentCompatibilityState extends SavedData {

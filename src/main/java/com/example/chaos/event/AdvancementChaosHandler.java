@@ -65,9 +65,15 @@ public class AdvancementChaosHandler {
             }
 
             // Determine whether this item can normally store enchantments.
-            boolean normallyEnchantable =
-                    EnchantmentHelper.canStoreEnchantments(itemStack);
+           boolean normallyEnchantable = false;
 
+                    for (Holder.Reference<Enchantment> enchantment :
+                          registry.holders().toList()) {
+                       if (enchantment.value().canEnchant(itemStack)) {
+                           normallyEnchantable = true;
+                          break;
+                       }
+                    }
             List<Holder.Reference<Enchantment>> candidates =
                     new ArrayList<>();
 

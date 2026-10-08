@@ -1,6 +1,9 @@
+
 package com.example.chaos.event;
 
 import com.example.chaos.state.GlobalMultiplierState;
+import com.example.chaos.state.EnchantmentCompatibilityState;
+
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
@@ -10,48 +13,41 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class AdvancementChaosHandler {
 
     public static void onPlayerEarnAdvancement(ServerPlayer player) {
 
-        // Get the player's current multiplier.
+        // Get and double the current multiplier.
         long currentMultiplier =
                 GlobalMultiplierState.getMultiplier(player);
 
-        // Double the multiplier.
         long nextMultiplier = currentMultiplier * 2L;
 
-        // Prevent overflow from turning the multiplier negative.
-        if (nextMultiplier < currentMultiplier) {
+        // Prevent overflow.
+        if (nextMultiplier < currentMultiplier || nextMultiplier < 0) {
             nextMultiplier = Long.MAX_VALUE;
         }
 
-        // Save the new multiplier.
-        GlobalMultiplierState.setMultiplier(
-                player,
-                nextMultiplier
-        );
+        // Save and sync the multiplier.
+        GlobalMultiplierState.setMultiplier(player, nextMultiplier);
+        GlobalMultiplierState.syncToClient(player, nextMultiplier);
 
-        // Update the client's HUD.
-        GlobalMultiplierState.syncToClient(
-                player,
-                nextMultiplier
-        );
-
-        // Get Minecraft's enchantment registry.
         Registry<Enchantment> registry =
                 player.registryAccess()
                         .registryOrThrow(Registries.ENCHANTMENT);
 
-        // Convert the multiplier to the maximum level
-        // Minecraft's enchantment component can store.
         int enchantmentLevel =
-                (int) Math.min(
-                        nextMultiplier,
-                        Integer.MAX_VALUE
-                );
+                (int) Math.min(nextMultiplier, Integer.MAX_VALUE);
+
+        // Read the compatibility toggle.
+        boolean allowIncompatible =
+                EnchantmentCompatibilityState
+                        .get(player.getServer())
+                        .allowsIncompatibleEnchants();
 
         // Process every inventory slot.
         for (int i = 0;
@@ -61,44 +57,76 @@ public class AdvancementChaosHandler {
             ItemStack itemStack =
                     player.getInventory().getItem(i);
 
-            // Ignore empty slots.
             if (itemStack.isEmpty()) {
                 continue;
             }
 
-            // Pick a completely random enchantment.
-            Optional<Holder.Reference<Enchantment>> randomEnchant =
-                    registry.getRandom(player.getRandom());
+            /*
+             * ON:
+             * Any enchantment can be selected, as before.
+             *
+             * OFF:
+             * Normally enchantable items only receive enchantments
+             * compatible with their item type and existing enchants.
+             *
+             * Normally non-enchantable items, such as dirt, retain
+             * the original unrestricted random-enchantment behavior.
+             */
 
-            if (randomEnchant.isEmpty()) {
+            boolean normallyEnchantable =
+                    EnchantmentHelper.canStoreEnchantments(itemStack);
+
+            List<Holder.Reference<Enchantment>> candidates =
+                    new ArrayList<>();
+
+            for (Holder.Reference<Enchantment> candidate :
+                    registry.holders().toList()) {
+
+                if (allowIncompatible || !normallyEnchantable) {
+                    candidates.add(candidate);
+                    continue;
+                }
+
+                // Check whether this enchantment supports the item.
+                boolean supportsItem =
+                        candidate.value().canEnchant(itemStack);
+
+                if (!supportsItem) {
+                    continue;
+                }
+
+                // Reject conflicts with existing enchantments.
+                boolean conflicts = false;
+
+                for (Holder<Enchantment> existing :
+                        EnchantmentHelper.getEnchantmentsForCrafting(itemStack)
+                                .keySet()) {
+
+                    if (!existing.equals(candidate)
+                            && Enchantment.areIncompatible(
+                                    candidate,
+                                    existing)) {
+                        conflicts = true;
+                        break;
+                    }
+                }
+
+                if (!conflicts) {
+                    candidates.add(candidate);
+                }
+            }
+
+            if (candidates.isEmpty()) {
                 continue;
             }
 
+            // Choose a random eligible enchantment.
             Holder<Enchantment> enchantment =
-                    randomEnchant.get();
+                    candidates.get(
+                            player.getRandom().nextInt(candidates.size())
+                    );
 
-            /*
-             * Directly modify the enchantment component.
-             *
-             * This intentionally bypasses normal:
-             *
-             * - item compatibility
-             * - enchantment compatibility
-             * - normal enchanting-table restrictions
-             * - normal anvil restrictions
-             *
-             * Therefore things such as:
-             *
-             * Sharpness + Smite
-             * Fortune + Silk Touch
-             * Protection + Fire Protection
-             * Mending + Infinity
-             *
-             * can coexist.
-             *
-             * It also works on normally unenchantable items
-             * such as dirt, food, sticks, blocks, etc.
-             */
+            // Apply the enchantment at the current multiplier level.
             EnchantmentHelper.updateEnchantments(
                     itemStack,
                     mutableEnchantments -> {
@@ -110,12 +138,12 @@ public class AdvancementChaosHandler {
             );
         }
 
-        // Tell the player what happened.
         player.sendSystemMessage(
                 Component.literal(
-                        "§6§lMULTIPLIER UP! §eAll items received a random enchantment at §b"
+                        "§6§lMULTIPLIER UP! §eAll eligible items received a random enchantment at §b"
                                 + nextMultiplier
-                                + "x§e!"
+                                + "x§e! Compatibility: "
+                                + (allowIncompatible ? "ON" : "OFF")
                 )
         );
     }

@@ -24,7 +24,8 @@ public class SweepingEdgeRangeMixin {
     private void chaosenchants$expandSweepRadius(Args args) {
         Player player = (Player) (Object) this;
 
-        int level = EnchantmentHelper.getItemEnchantmentLevel(
+        int level =
+               com.example.chaos.EnchantmentLevelHelper.getLevel(
                 Enchantments.SWEEPING_EDGE,
                 player.getMainHandItem()
         );

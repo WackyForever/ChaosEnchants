@@ -1,10 +1,12 @@
-
 package com.example.chaos.mixin;
 
+import com.example.chaos.EnchantmentLevelHelper;
+
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
-import net.minecraft.world.phys.AABB;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -24,10 +26,14 @@ public class SweepingEdgeRangeMixin {
     private void chaosenchants$expandSweepRadius(Args args) {
         Player player = (Player) (Object) this;
 
-        int level =
-               com.example.chaos.EnchantmentLevelHelper.getLevel(
+        Registry<Enchantment> enchantmentRegistry =
+                player.level().registryAccess()
+                        .registryOrThrow(Registries.ENCHANTMENT);
+
+        int level = EnchantmentLevelHelper.getLevel(
                 Enchantments.SWEEPING_EDGE,
-                player.getMainHandItem()
+                player.getMainHandItem(),
+                enchantmentRegistry
         );
 
         if (level <= 0) {
@@ -39,12 +45,12 @@ public class SweepingEdgeRangeMixin {
 
         double horizontal = Math.min(
                 12.0,
-                originalHorizontal + level * 0.5
+                originalHorizontal + (double) level * 0.5
         );
 
         double vertical = Math.min(
                 6.0,
-                originalVertical + level * 0.25
+                originalVertical + (double) level * 0.25
         );
 
         args.set(0, horizontal);

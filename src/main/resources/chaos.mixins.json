@@ -8,8 +8,7 @@
     "UncapEnchantmentMutableMixin",
     "PlayerAdvancementsMixin",
     "UncapClampedEnchantmentValuesMixin",
-    "EnderPearlMultishotMixin",
-    "SweepingEdgeRangeMixin"
+    "EnderPearlMultishotMixin"
   ],
   "injectors": {
     "defaultRequire": 1

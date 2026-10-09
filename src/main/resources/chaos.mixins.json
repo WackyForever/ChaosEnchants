@@ -1,3 +1,4 @@
+
 {
   "required": true,
   "package": "com.example.chaos.mixin",
@@ -6,7 +7,7 @@
     "UncapEnchantmentLevelsMixin",
     "UncapEnchantmentMutableMixin",
     "PlayerAdvancementsMixin",
-    "UncapEfficiencyMixin"
+    "UncapClampedEnchantmentValuesMixin"
   ],
   "injectors": {
     "defaultRequire": 1

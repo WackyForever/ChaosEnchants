@@ -40,10 +40,11 @@ public class EnderPearlMultishotMixin {
             return;
         }
 
-        int multishotLevel = EnchantmentHelper.getItemEnchantmentLevel(
+        int multishotLevel =
+                com.example.chaos.EnchantmentLevelHelper.getLevel(
                 Enchantments.MULTISHOT,
                 stack
-        );
+        );       
 
         if (multishotLevel <= 0) {
             return;

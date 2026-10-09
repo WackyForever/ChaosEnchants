@@ -32,10 +32,10 @@ public final class ChaosEnchantmentEffects {
                         return;
                     }
 
-                    int level = EnchantmentHelper.getItemEnchantmentLevel(
-                            Enchantments.EFFICIENCY,
-                            player.getMainHandItem()
-                    );
+                    int level = com.example.chaos.EnchantmentLevelHelper.getLevel( 
+                                 Enchantments.EFFICIENCY,
+                                 player.getMainHandItem()
+                               );
 
                     if (level < 100) {
                         return;

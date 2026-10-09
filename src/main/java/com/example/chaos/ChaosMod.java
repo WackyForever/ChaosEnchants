@@ -3,6 +3,7 @@ package com.example.chaos;
 
 import com.example.chaos.state.GlobalMultiplierState;
 import com.example.chaos.state.EnchantmentCompatibilityState;
+import com.example.chaos.event.ChaosEnchantmentEffects;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -46,13 +47,16 @@ public class ChaosMod implements ModInitializer {
     @Override
     public void onInitialize() {
 
-        // Register multiplier synchronization
+        // Register area mining.
+        ChaosEnchantmentEffects.register();
+
+        // Register multiplier synchronization.
         PayloadTypeRegistry.playS2C().register(
                 MultiplierSyncPayload.ID,
                 MultiplierSyncPayload.CODEC
         );
 
-        // Sync the current multiplier when a player joins
+        // Sync the current multiplier when a player joins.
         ServerPlayConnectionEvents.JOIN.register(
                 (handler, sender, server) -> {
                     long current =
@@ -67,7 +71,7 @@ public class ChaosMod implements ModInitializer {
                 }
         );
 
-        // Register compatibility commands
+        // Register compatibility commands.
         CommandRegistrationCallback.EVENT.register(
                 (dispatcher, registryAccess, environment) -> {
 
@@ -75,8 +79,6 @@ public class ChaosMod implements ModInitializer {
                             Commands.literal("chaosenchants")
                                     .then(
                                             Commands.literal("compatibility")
-
-                                                    // Show current setting
                                                     .executes(context -> {
                                                         boolean enabled =
                                                                 EnchantmentCompatibilityState
@@ -93,8 +95,6 @@ public class ChaosMod implements ModInitializer {
 
                                                         return 1;
                                                     })
-
-                                                    // Enable incompatible enchantments
                                                     .then(
                                                             Commands.literal("on")
                                                                     .requires(source ->
@@ -114,8 +114,6 @@ public class ChaosMod implements ModInitializer {
                                                                         return 1;
                                                                     })
                                                     )
-
-                                                    // Disable incompatible enchantments
                                                     .then(
                                                             Commands.literal("off")
                                                                     .requires(source ->

@@ -1,14 +1,14 @@
-
 package com.example.chaos.event;
+
+import com.example.chaos.EnchantmentLevelHelper;
 
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
-
-import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.core.Registry;
 
 public final class ChaosEnchantmentEffects {
 
@@ -26,22 +26,26 @@ public final class ChaosEnchantmentEffects {
                         return;
                     }
 
-                    // Prevent extra block breaks from recursively triggering
-                    // another area-mining operation.
                     if (AREA_MINING.get()) {
                         return;
                     }
 
-                    int level = com.example.chaos.EnchantmentLevelHelper.getLevel( 
-                                 Enchantments.EFFICIENCY,
-                                 player.getMainHandItem()
-                               );
+                    Registry<Enchantment> enchantmentRegistry =
+                            player.level().registryAccess()
+                                    .registryOrThrow(Registries.ENCHANTMENT);
+
+                    int level = EnchantmentLevelHelper.getLevel(
+                            net.minecraft.world.item.enchantment.Enchantments.EFFICIENCY,
+                            player.getMainHandItem(),
+                            enchantmentRegistry
+                    );
 
                     if (level < 100) {
                         return;
                     }
 
                     int size;
+
                     if (level >= 1000) {
                         size = 7;
                     } else if (level >= 500) {
@@ -65,31 +69,17 @@ public final class ChaosEnchantmentEffects {
 
                                 BlockPos target;
 
-                                // Mine a plane perpendicular to the
-                                // player's horizontal facing direction.
                                 if (facing.getAxis() == Direction.Axis.Z) {
                                     target = pos.offset(a, b, 0);
                                 } else {
                                     target = pos.offset(0, b, a);
                                 }
 
-                                var targetState =
-                                        world.getBlockState(target);
+                                var targetState = world.getBlockState(target);
 
-                                if (targetState.isAir()) {
-                                    continue;
-                                }
-
-                                // Do not automatically destroy containers,
-                                // machines, or other block entities.
-                                if (targetState.hasBlockEntity()) {
-                                    continue;
-                                }
-
-                                // Skip unbreakable blocks.
-                                if (targetState.getDestroySpeed(
-                                        world, target
-                                ) < 0.0F) {
+                                if (targetState.isAir()
+                                        || targetState.hasBlockEntity()
+                                        || targetState.getDestroySpeed(world, target) < 0.0F) {
                                     continue;
                                 }
 

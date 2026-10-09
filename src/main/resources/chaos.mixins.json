@@ -7,7 +7,9 @@
     "UncapEnchantmentLevelsMixin",
     "UncapEnchantmentMutableMixin",
     "PlayerAdvancementsMixin",
-    "UncapClampedEnchantmentValuesMixin"
+    "UncapClampedEnchantmentValuesMixin",
+    "EnderPearlMultishotMixin",
+    "SweepingEdgeRangeMixin"
   ],
   "injectors": {
     "defaultRequire": 1
